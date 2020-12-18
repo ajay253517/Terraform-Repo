@@ -1,0 +1,11 @@
+--- 
+ - hosts: webservers
+   become: true
+
+   tasks: 
+   - name: Installing httpd package
+     yum: name=httpd state=latest
+
+   - name: Service restart
+     service: name=httpd state=started enabled=yes
+

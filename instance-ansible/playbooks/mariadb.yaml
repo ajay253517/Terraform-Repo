@@ -1,0 +1,46 @@
+---
+ - hosts: dbservers
+   become: true
+   vars:
+     mysql_root: R0ot@123
+   tasks:
+
+    - name: installing db packages
+      yum: name={{ item }} state=latest
+      with_items:
+        - mariadb-server
+        - mariadb
+
+    - name: Configuring service
+      service: name=mariadb state=started enabled=yes
+
+    - name: delete anonymous MySQL server user for {{ ansible_nodename }}
+      mysql_user: 
+        login_user=root
+        login_password='{{ mysql_root }}'
+        check_implicit_admin=yes
+        user=""
+        host={{ item }}
+        state="absent"
+      with_items:
+        - ""
+        - "{{ ansible_nodename }}"
+        - localhost
+
+    - name: Change root user password on first run
+      mysql_user: 
+        login_user=root
+        login_password="{{ mysql_root }}"
+        check_implicit_admin=yes
+        name=root
+        password={{ mysql_root }}
+        priv=*.*:ALL,GRANT
+        host={{ item }}
+      with_items:
+        - "{{ ansible_nodename }}"
+        - 127.0.0.1
+        - ::1
+        - localhost
+
+    - name: remove the MySQL test database
+      action: mysql_db login_user=root login_password="{{ mysql_root }}" db=test state=absent
