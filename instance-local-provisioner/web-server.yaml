@@ -1,0 +1,10 @@
+--- 
+ - hosts: all
+   become: true
+
+   tasks: 
+   - name: Installing httpd package
+     yum:  name=httpd state=latest update_cache=true
+
+   - name: Service restart
+     service: name=httpd state=restart enabled=yes
